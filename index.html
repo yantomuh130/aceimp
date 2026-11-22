@@ -2,9 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Video Player</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aceimp - Video</title>
 
 <style>
 * {
@@ -13,88 +12,78 @@
 
 body {
     margin: 0;
-    background: #111;
-    color: white;
+    background: #fff;
+    color: #171923;
     font-family: Arial, sans-serif;
 }
 
 .container {
-    max-width: 850px;
-    margin: 25px auto;
-    padding: 12px;
+    max-width: 680px;
+    margin: auto;
+    padding: 20px 16px;
 }
 
-.loading {
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.upload {
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 15px 28px;
+    border-radius: 30px;
+}
+
+.content {
     text-align: center;
-    padding: 15px;
-    color: #ddd;
+    margin-top: 100px;
+}
+
+.content h2 {
+    font-size: 22px;
+}
+
+.content p {
+    color: #999;
     font-size: 14px;
-}
-
-.spinner {
-    width: 25px;
-    height: 25px;
-    border: 3px solid #444;
-    border-top: 3px solid #e91e63;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: auto auto 10px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.video-box {
-    background: #000;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-video {
-    width: 100%;
-    display: block;
 }
 
 .buttons {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 15px;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 35px;
 }
 
-button {
-    flex: 1;
-    padding: 13px 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.upload {
-    background: #e91e63;
-    color: white;
-}
-
-.telegram {
-    background: #168de2;
-    color: white;
-}
-
-.collection {
-    background: #333;
-    color: white;
+.buttons button {
+    width: 100%;
+    padding: 21px 12px;
+    border: 1px solid #dce1e7;
+    border-radius: 13px;
+    background: #f9fafb;
+    color: #3976d5;
+    font-size: 17px;
 }
 
 .notice {
     text-align: center;
-    color: #aaa;
+    margin-top: 25px;
+    color: #999;
     font-size: 13px;
-    margin-top: 20px;
 }
-
 </style>
 </head>
 
@@ -102,34 +91,26 @@ button {
 
 <div class="container">
 
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        Loading video...
+    <div class="header">
+        <div class="logo">aceimp</div>
+        <button class="upload" id="upload">
+            Upload
+        </button>
     </div>
 
-    <div class="video-box">
-
-        <video id="video"
-            controls
-            playsinline
-            preload="metadata">
-
-        </video>
-
+    <div class="content">
+        <h2>Welcome to aceimp</h2>
+        <p>Enjoy watching your favorite videos.</p>
     </div>
 
     <div class="buttons">
 
-        <button class="upload" id="upload">
-            UPLOAD
+        <button id="collection">
+            Cek koleksi lainnya
         </button>
 
-        <button class="telegram" id="telegram">
-            JOIN TELEGRAM
-        </button>
-
-        <button class="collection" id="collection">
-            CEK KOLEKSI LAINNYA
+        <button id="telegram">
+            Join Telegram
         </button>
 
     </div>
@@ -142,144 +123,23 @@ button {
 
 <script>
 
-// =================================
-// KONFIGURASI
-// =================================
-
-// LINK ADSTERRA
 const ADSTERRA =
 "https://auctionr.org/4/045c236f7845efa95328c65af2e004c3";
 
-// LINK TELEGRAM
 const TELEGRAM =
 "https://t.me/wuikwuik";
 
-// GANTI DENGAN CDN ASLI TEMPAT VIDEO DISIMPAN
-const VIDEO_BASE_URL =
-"https://GANTI-DENGAN-CDN-ASLI/";
+document.getElementById("upload").onclick = function() {
+    location.href = ADSTERRA;
+};
 
-// =================================
-// MEMBACA ID VIDEO DARI URL
-// =================================
+document.getElementById("collection").onclick = function() {
+    location.href = ADSTERRA;
+};
 
-const path = window.location.pathname;
-
-const videoID = path
-    .split("/")
-    .pop()
-    .replace(/\.mp4$/i, "");
-
-const video = document.getElementById("video");
-const loading = document.getElementById("loading");
-
-// Memasang video berdasarkan ID
-video.src = VIDEO_BASE_URL + videoID + ".mp4";
-
-// =================================
-// LOADING
-// =================================
-
-video.addEventListener("loadeddata", function() {
-    loading.style.display = "none";
-});
-
-video.addEventListener("error", function() {
-    loading.innerHTML = "Video tidak ditemukan.";
-});
-
-// =================================
-// SISTEM IKLAN
-// =================================
-
-let firstAdShown = false;
-let secondAdShown = false;
-let adWindow = null;
-
-// Klik pertama PLAY
-video.addEventListener("play", function(event) {
-
-    if (!firstAdShown) {
-
-        event.preventDefault();
-
-        video.pause();
-
-        firstAdShown = true;
-
-        // Membuka iklan dari tindakan klik pengguna
-        adWindow = window.open(ADSTERRA, "_blank");
-
-        if (!adWindow) {
-            firstAdShown = false;
-            alert("Izinkan pop-up browser untuk melanjutkan.");
-        }
-
-    }
-
-}, true);
-
-// =================================
-// REDIRECT DETIK KE-15
-// =================================
-
-video.addEventListener("timeupdate", function() {
-
-    if (
-        video.currentTime >= 15 &&
-        !secondAdShown
-    ) {
-
-        secondAdShown = true;
-
-        // Gunakan tab iklan yang sebelumnya dibuka
-        if (adWindow && !adWindow.closed) {
-
-            adWindow.location.href = ADSTERRA;
-
-        } else {
-
-            // Jika tab iklan sudah ditutup,
-            // jangan membuka pop-up secara paksa.
-            console.log("Tab iklan sudah ditutup.");
-
-        }
-
-    }
-
-});
-
-// =================================
-// TOMBOL UPLOAD
-// =================================
-
-document.getElementById("upload")
-.addEventListener("click", function() {
-
-    window.open(ADSTERRA, "_blank");
-
-});
-
-// =================================
-// TOMBOL TELEGRAM
-// =================================
-
-document.getElementById("telegram")
-.addEventListener("click", function() {
-
-    window.open(TELEGRAM, "_blank");
-
-});
-
-// =================================
-// CEK KOLEKSI LAINNYA
-// =================================
-
-document.getElementById("collection")
-.addEventListener("click", function() {
-
-    window.open(ADSTERRA, "_blank");
-
-});
+document.getElementById("telegram").onclick = function() {
+    location.href = TELEGRAM;
+};
 
 </script>
 
