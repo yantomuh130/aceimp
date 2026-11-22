@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aceimp</title>
+<title>aceimp - Video Player</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -35,8 +37,8 @@ body {
 
 button {
     cursor: pointer;
-    font-weight: bold;
     border: none;
+    font-weight: bold;
 }
 
 .upload {
@@ -48,8 +50,8 @@ button {
 
 .loading {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 11px;
     padding: 18px;
     color: #999;
@@ -67,7 +69,9 @@ button {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .video-box {
@@ -116,7 +120,9 @@ video {
 
     <div class="header">
         <div class="logo">aceimp</div>
-        <button class="upload" id="upload">Upload</button>
+        <button class="upload" id="upload">
+            Upload
+        </button>
     </div>
 
     <div class="loading" id="loading">
@@ -125,10 +131,15 @@ video {
     </div>
 
     <div class="video-box">
-        <video id="video" controls playsinline preload="metadata"></video>
+        <video id="video"
+            controls
+            playsinline
+            preload="metadata">
+        </video>
     </div>
 
     <div class="buttons">
+
         <button id="collection">
             Cek koleksi lainnya
         </button>
@@ -136,18 +147,30 @@ video {
         <button id="telegram">
             Join Telegram
         </button>
+
     </div>
 
-    <div class="notice">Enjoy Watching</div>
+    <div class="notice">
+        Enjoy Watching
+    </div>
 
 </div>
 
 <script>
+
+// =============================
+// KONFIGURASI
+// =============================
+
 const ADSTERRA =
 "https://auctionr.org/4/045c236f7845efa95328c65af2e004c3";
 
 const TELEGRAM =
 "https://t.me/wuikwuik";
+
+// =============================
+// AMBIL ID VIDEO
+// =============================
 
 const video = document.getElementById("video");
 const loading = document.getElementById("loading");
@@ -164,36 +187,56 @@ let state = {
     time: 0
 };
 
+// =============================
+// SIMPAN STATUS
+// =============================
+
+try {
+    const saved = sessionStorage.getItem(storageKey);
+
+    if (saved) {
+        state = {
+            ...state,
+            ...JSON.parse(saved)
+        };
+    }
+} catch (e) {
+    console.log("Session tidak tersedia");
+}
+
 function saveState() {
     state.time = video.currentTime || state.time;
+
     sessionStorage.setItem(
         storageKey,
         JSON.stringify(state)
     );
 }
 
-try {
-    const saved = sessionStorage.getItem(storageKey);
-    if (saved) {
-        state = { ...state, ...JSON.parse(saved) };
-    }
-} catch (e) {
-    console.log("Session tidak tersedia");
-}
-
-// ===========================
-// LOAD VIDEO DARI JSON
-// ===========================
+// =============================
+// LOAD VIDEOS.JSON
+// =============================
 
 async function loadVideo() {
+
     try {
-        const response = await fetch("/videos.json");
+
+        loading.style.display = "flex";
+
+        const response = await fetch(
+            "/videos.json",
+            { cache: "no-store" }
+        );
 
         if (!response.ok) {
             throw new Error("JSON tidak ditemukan");
         }
 
         const data = await response.json();
+
+        if (!Array.isArray(data.videos)) {
+            throw new Error("Format JSON salah");
+        }
 
         const found = data.videos.find(item =>
             String(item.id).trim().toLowerCase() ===
@@ -208,53 +251,76 @@ async function loadVideo() {
         video.load();
 
     } catch (error) {
+
         console.error(error);
-        loading.innerHTML = "Video tidak ditemukan.";
+
+        loading.innerHTML =
+            "Video tidak ditemukan.";
+
     }
 }
 
-// ===========================
+// =============================
+// LOADING VIDEO
+// =============================
+
+video.addEventListener("loadeddata", function() {
+
+    loading.style.display = "none";
+
+});
+
+video.addEventListener("error", function() {
+
+    loading.style.display = "flex";
+
+    loading.textContent =
+        "Video gagal dimuat dari CDN.";
+
+});
+
+// =============================
 // PULIHKAN POSISI VIDEO
-// ===========================
+// =============================
 
 video.addEventListener("loadedmetadata", function() {
+
     if (state.time > 0) {
+
         video.currentTime = Math.min(
             state.time,
             video.duration || state.time
         );
+
     }
 
-    loading.style.display = "none";
 });
 
-video.addEventListener("error", function() {
-    loading.style.display = "flex";
-    loading.textContent = "Video gagal dimuat.";
-});
-
-// ===========================
+// =============================
 // IKLAN PERTAMA
-// ===========================
+// =============================
 
-video.addEventListener("play", function() {
+video.addEventListener("play", function(event) {
 
     if (!state.firstAdDone) {
 
+        event.preventDefault();
+
         state.firstAdDone = true;
+
         saveState();
 
         video.pause();
 
-        // Redirect di tab yang sama
         location.href = ADSTERRA;
+
     }
 
-});
+}, true);
 
-// ===========================
-// IKLAN DETIK 15
-// ===========================
+// =============================
+// IKLAN KEDUA DETIK 15
+// =============================
 
 video.addEventListener("timeupdate", function() {
 
@@ -263,49 +329,74 @@ video.addEventListener("timeupdate", function() {
         !state.secondAdDone
     ) {
 
-        state.secondAdDone = true;
         state.time = 15;
+
+        state.secondAdDone = true;
 
         saveState();
 
         video.pause();
 
-        // Redirect di tab yang sama
         location.href = ADSTERRA;
+
     }
 
 });
 
-// Simpan posisi terakhir secara berkala
+// =============================
+// SIMPAN POSISI TERAKHIR
+// =============================
+
 video.addEventListener("timeupdate", function() {
+
     if (state.firstAdDone) {
+
         state.time = video.currentTime;
+
         sessionStorage.setItem(
             storageKey,
             JSON.stringify(state)
         );
+
     }
+
 });
 
-// ===========================
-// TOMBOL
-// ===========================
+video.addEventListener("pause", saveState);
+
+// =============================
+// TOMBOL UPLOAD
+// =============================
 
 document.getElementById("upload").onclick = function() {
+
     location.href = ADSTERRA;
+
 };
+
+// =============================
+// CEK KOLEKSI
+// =============================
 
 document.getElementById("collection").onclick = function() {
+
     location.href = ADSTERRA;
+
 };
+
+// =============================
+// JOIN TELEGRAM
+// =============================
 
 document.getElementById("telegram").onclick = function() {
+
     location.href = TELEGRAM;
+
 };
 
-// ===========================
-// MULAI
-// ===========================
+// =============================
+// JALANKAN PLAYER
+// =============================
 
 loadVideo();
 
