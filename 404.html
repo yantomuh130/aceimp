@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Player</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 850px;
+    margin: 25px auto;
+    padding: 12px;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #ddd;
+}
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #444;
+    border-top: 3px solid #e91e63;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto auto 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.video-box {
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    display: block;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+button {
+    flex: 1;
+    padding: 13px 8px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.upload {
+    background: #e91e63;
+    color: white;
+}
+
+.telegram {
+    background: #168de2;
+    color: white;
+}
+
+.collection {
+    background: #333;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="loading" id="loading">
+    <div class="spinner"></div>
+    Loading video...
+</div>
+
+<div class="video-box">
+    <video id="video" controls playsinline preload="metadata"></video>
+</div>
+
+<div class="buttons">
+    <button class="upload" id="upload">UPLOAD</button>
+    <button class="telegram" id="telegram">JOIN TELEGRAM</button>
+    <button class="collection" id="collection">CEK KOLEKSI LAINNYA</button>
+</div>
+
+</div>
+
+<script>
+
+// LINK IKLAN
+const ADSTERRA =
+"https://auctionr.org/4/045c236f7845efa95328c65af2e004c3";
+
+// TELEGRAM
+const TELEGRAM =
+"https://t.me/wuikwuik";
+
+// CDN VIDEO ASLI
+const VIDEO_BASE =
+"https://GANTI-DENGAN-CDN-ASLI/";
+
+// AMBIL ID VIDEO
+const video = document.getElementById("video");
+const loading = document.getElementById("loading");
+
+const videoID = location.pathname
+    .split("/")
+    .pop()
+    .replace(/\.mp4$/i, "");
+
+// PASANG VIDEO
+video.src = VIDEO_BASE + videoID + ".mp4";
+
+// LOADING
+video.addEventListener("loadeddata", () => {
+    loading.style.display = "none";
+});
+
+video.addEventListener("error", () => {
+    loading.innerHTML = "Video tidak ditemukan.";
+});
+
+// IKLAN PERTAMA
+let firstAdShown = false;
+let secondAdShown = false;
+let adWindow = null;
+
+video.addEventListener("play", function(event) {
+
+    if (!firstAdShown) {
+        event.preventDefault();
+        video.pause();
+
+        adWindow = window.open(ADSTERRA, "_blank");
+
+        if (adWindow) {
+            firstAdShown = true;
+        }
+    }
+
+}, true);
+
+// IKLAN DETIK 15
+video.addEventListener("timeupdate", function() {
+
+    if (video.currentTime >= 15 && !secondAdShown) {
+
+        secondAdShown = true;
+
+        if (adWindow && !adWindow.closed) {
+            adWindow.location.href = ADSTERRA;
+        }
+    }
+
+});
+
+// TOMBOL
+document.getElementById("upload").onclick = () => {
+    window.open(ADSTERRA, "_blank");
+};
+
+document.getElementById("telegram").onclick = () => {
+    window.open(TELEGRAM, "_blank");
+};
+
+document.getElementById("collection").onclick = () => {
+    window.open(ADSTERRA, "_blank");
+};
+
+</script>
+
+</body>
+</html>
